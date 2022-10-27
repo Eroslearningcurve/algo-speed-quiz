@@ -1,0 +1,90 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l4
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l3
+err
+main_l3:
+txn Sender
+global CreatorAddress
+==
+return
+main_l4:
+global GroupSize
+int 3
+==
+txn GroupIndex
+int 2
+==
+&&
+gtxn 0 TypeEnum
+int appl
+==
+&&
+gtxna 0 ApplicationArgs 0
+byte "add"
+==
+&&
+gtxn 1 TypeEnum
+int pay
+==
+&&
+txn NumAppArgs
+int 6
+==
+&&
+txna ApplicationArgs 0
+len
+int 0
+>
+&&
+txna ApplicationArgs 1
+len
+int 0
+>
+&&
+txna ApplicationArgs 2
+len
+int 0
+>
+&&
+txna ApplicationArgs 3
+len
+int 0
+>
+&&
+txna ApplicationArgs 4
+len
+int 0
+>
+&&
+txna ApplicationArgs 5
+len
+int 0
+>
+&&
+assert
+byte "QUESTION"
+txna ApplicationArgs 0
+app_global_put
+byte "OPTION1"
+txna ApplicationArgs 1
+app_global_put
+byte "OPTION2"
+txna ApplicationArgs 2
+app_global_put
+byte "OPTION3"
+txna ApplicationArgs 3
+app_global_put
+byte "OPTION4"
+txna ApplicationArgs 4
+app_global_put
+byte "ANSWER"
+txna ApplicationArgs 5
+app_global_put
+int 1
+return

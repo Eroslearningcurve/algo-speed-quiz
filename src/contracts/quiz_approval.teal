@@ -1,0 +1,309 @@
+#pragma version 6
+txn ApplicationID
+int 0
+==
+bnz main_l16
+txn OnCompletion
+int DeleteApplication
+==
+bnz main_l15
+txn OnCompletion
+int OptIn
+==
+bnz main_l14
+txna ApplicationArgs 0
+byte "add"
+==
+bnz main_l13
+txna ApplicationArgs 0
+byte "start"
+==
+bnz main_l12
+txna ApplicationArgs 0
+byte "end"
+==
+bnz main_l7
+err
+main_l7:
+txn NumAppArgs
+int 2
+==
+txna Accounts 0
+txna Applications 0
+app_opted_in
+&&
+txna Accounts 0
+byte "STATE"
+app_local_get
+int 1
+==
+&&
+txna ApplicationArgs 1
+btoi
+int 100
+<=
+&&
+txn Fee
+global MinTxnFee
+int 2
+*
+>=
+&&
+assert
+byte "BENCHMARK"
+app_global_get
+store 6
+txna ApplicationArgs 1
+btoi
+store 5
+load 5
+load 6
+>=
+bnz main_l11
+main_l8:
+txna Accounts 0
+byte "SCORE"
+app_local_get
+store 8
+load 8
+txna ApplicationArgs 1
+btoi
+<
+bnz main_l10
+main_l9:
+txna Accounts 0
+byte "STATE"
+int 0
+app_local_put
+int 1
+return
+main_l10:
+txna Accounts 0
+byte "SCORE"
+txna ApplicationArgs 1
+btoi
+app_local_put
+b main_l9
+main_l11:
+byte "S-ATTEMPTS"
+app_global_get
+store 7
+txna Accounts 0
+int 2000000
+callsub sendfunds_0
+byte "S-ATTEMPTS"
+load 7
+int 1
++
+app_global_put
+b main_l8
+main_l12:
+txna Accounts 0
+txna Applications 0
+app_opted_in
+txna Accounts 0
+byte "STATE"
+app_local_get
+int 0
+==
+&&
+byte "QUESTIONS"
+app_global_get
+int 0
+>
+&&
+global GroupSize
+int 2
+==
+&&
+txn GroupIndex
+int 0
+==
+&&
+gtxn 1 TypeEnum
+int pay
+==
+&&
+gtxn 1 Receiver
+global CurrentApplicationAddress
+==
+&&
+gtxn 1 CloseRemainderTo
+global ZeroAddress
+==
+&&
+gtxn 1 Amount
+int 1000000
+==
+&&
+gtxn 1 Sender
+gtxn 0 Sender
+==
+&&
+assert
+byte "ATTEMPTS"
+app_global_get
+store 4
+txna Accounts 0
+byte "P-ATTEMPTS"
+app_local_get
+store 3
+byte "ATTEMPTS"
+load 4
+int 1
++
+app_global_put
+txna Accounts 0
+byte "P-ATTEMPTS"
+load 3
+int 1
++
+app_local_put
+txna Accounts 0
+byte "STATE"
+int 1
+app_local_put
+int 1
+return
+main_l13:
+txn Sender
+global CreatorAddress
+==
+global GroupSize
+int 3
+==
+&&
+txn GroupIndex
+int 0
+==
+&&
+gtxn 1 TypeEnum
+int pay
+==
+&&
+gtxn 1 Receiver
+global CurrentApplicationAddress
+==
+&&
+gtxn 1 CloseRemainderTo
+global ZeroAddress
+==
+&&
+gtxn 1 Amount
+int 1000000
+>=
+&&
+gtxn 1 Sender
+gtxn 0 Sender
+==
+&&
+assert
+byte "TIME"
+app_global_get
+store 0
+byte "Q-TIME"
+app_global_get
+store 1
+byte "QUESTIONS"
+app_global_get
+store 2
+byte "TIME"
+load 0
+load 1
++
+app_global_put
+byte "QUESTIONS"
+load 2
+int 1
++
+app_global_put
+int 1
+return
+main_l14:
+txna Accounts 0
+byte "STATE"
+int 0
+app_local_put
+txna Accounts 0
+byte "P-ATTEMPTS"
+int 0
+app_local_put
+txna Accounts 0
+byte "SCORE"
+int 0
+app_local_put
+int 1
+return
+main_l15:
+txn Sender
+global CreatorAddress
+==
+return
+main_l16:
+txn NumAppArgs
+int 3
+==
+txn Note
+byte "speed-quiz-dapp:uv1"
+==
+&&
+txna ApplicationArgs 0
+len
+int 0
+>
+&&
+txna ApplicationArgs 1
+btoi
+int 0
+>
+&&
+txna ApplicationArgs 2
+btoi
+int 0
+>
+&&
+assert
+byte "TITLE"
+txna ApplicationArgs 0
+app_global_put
+byte "Q-TIME"
+txna ApplicationArgs 1
+btoi
+app_global_put
+byte "BENCHMARK"
+txna ApplicationArgs 2
+btoi
+app_global_put
+byte "TIME"
+int 0
+app_global_put
+byte "DATE"
+global LatestTimestamp
+app_global_put
+byte "QUESTIONS"
+int 0
+app_global_put
+byte "ATTEMPTS"
+int 0
+app_global_put
+byte "S-ATTEMPTS"
+int 0
+app_global_put
+int 1
+return
+
+// send_funds
+sendfunds_0:
+store 10
+store 9
+itxn_begin
+int pay
+itxn_field TypeEnum
+load 9
+itxn_field Receiver
+load 10
+itxn_field Amount
+int 0
+itxn_field Fee
+itxn_submit
+retsub
