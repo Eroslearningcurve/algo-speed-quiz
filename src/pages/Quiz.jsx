@@ -17,10 +17,6 @@ import {
   endQuizAction,
   optInAction,
 } from "../utils/speedquiz";
-import {
-  NotificationSuccess,
-  NotificationError,
-} from "../components/Notifications";
 import Loader from "../components/Loader";
 
 const Quiz = ({ address, name, balance, fetchBalance, disconnect }) => {
@@ -42,6 +38,7 @@ const Quiz = ({ address, name, balance, fetchBalance, disconnect }) => {
 
   const getQuizInfo = useCallback(async () => {
     setLoading(true);
+    toast.info("Getting Quiz Info");
     if (!quizId) return;
     const id = quizId.match(/(\d+)/);
     await getQuizApplication(Number(id[0]))
@@ -95,72 +92,90 @@ const Quiz = ({ address, name, balance, fetchBalance, disconnect }) => {
   );
 
   const optIn = async () => {
+    toast.info("Opting In...");
     setLoading(true);
     optInAction(address, quizInfo)
       .then(() => {
-        toast(<NotificationSuccess text="Player OptedIn." />);
+        toast.dismiss();
+        toast.success("Player OptedIn.");
         getPlayerInfo(true);
         fetchBalance(address);
       })
       .catch((error) => {
         console.log(error);
-        toast(<NotificationError text="Failed to opt in." />);
+        toast.dismiss();
+        toast.error("Failed to opt in.");
         setLoading(false);
       });
   };
 
   const createQuestion = async (data) => {
     setLoading(true);
+    toast.info("Adding Question");
     createQuestionAction(address, data, quizInfo)
       .then(() => {
-        toast(<NotificationSuccess text="Quiz added successfully." />);
+        toast.dismiss();
+        toast.success("Quiz added successfully.");
         getQuizInfo();
         getQuestions();
         fetchBalance(address);
       })
       .catch((error) => {
         console.log(error);
-        toast(<NotificationError text="Failed to create quiz." />);
+        toast.dismiss();
+        toast.error("Failed to create quiz.");
         setLoading(false);
       });
   };
 
   const startQuiz = async () => {
     setLoading(true);
-    startQuizAction(address, quizInfo)
+    toast.info("Starting Quiz Session");
+    startQuizAction(address, quizInfo, playerInfo)
       .then(async () => {
-        toast(<NotificationSuccess text="Quiz started successfully." />);
+        toast.dismiss();
+        toast.success("Quiz started successfully.");
         await getPlayerInfo(true);
         fetchBalance(address);
         setQuizStarted(true);
       })
       .catch((error) => {
         console.log(error);
-        toast(<NotificationError text="Failed to start quiz." />);
+        toast.dismiss();
+        toast.error("Failed to start quiz.");
         setLoading(false);
       });
   };
 
   const endQuiz = async (score) => {
     setLoading(true);
+    toast.info("Ending Quiz Session");
     endQuizAction(address, score, quizInfo)
       .then(() => {
-        toast(<NotificationSuccess text="Quiz ended successfully." />);
+        toast.dismiss();
+        toast.success("Quiz ended successfully.");
         fetchBalance(address);
         toResultsPage(score);
         setLoading(false);
+        sessionStorage.removeItem("score");
       })
       .catch((error) => {
         console.log(error);
-        toast(<NotificationError text="Failed to end quiz." />);
+        setQuizStarted(false);
+        toast.dismiss();
+        toast.error("Failed to end quiz.");
         setLoading(false);
       });
   };
 
   useEffect(() => {
-    getQuizInfo();
-    getQuestions();
-    getPlayerInfo();
+    let check = true;
+    if (check) {
+      getQuizInfo();
+      getQuestions();
+      getPlayerInfo();
+    }
+    return () => (check = false);
   }, [getQuizInfo, getQuestions, getPlayerInfo]);
 
   if (loading) return <Loader />;

@@ -11,10 +11,6 @@ import {
   createQuizAction,
   deleteQuizAction,
 } from "../utils/speedquiz";
-import {
-  NotificationSuccess,
-  NotificationError,
-} from "../components/Notifications";
 
 const Home = ({ address, name, balance, fetchBalance, disconnect }) => {
   const [loading, setLoading] = useState(false);
@@ -32,6 +28,7 @@ const Home = ({ address, name, balance, fetchBalance, disconnect }) => {
 
   const getQuizzes = useCallback(async () => {
     setLoading(true);
+    toast.info("Getting Your Info");
     getQuizzesAction(address)
       .then((quizzes) => {
         if (quizzes) {
@@ -65,32 +62,38 @@ const Home = ({ address, name, balance, fetchBalance, disconnect }) => {
   }, [address]);
 
   const createQuiz = async (data) => {
+    toast.info("Creating New Quiz");
     setLoading(true);
     createQuizAction(address, data)
       .then(() => {
-        toast(<NotificationSuccess text="Quiz added successfully." />);
+        toast.dismiss();
+        toast.success("Quiz added successfully.");
         getQuizzes();
         fetchBalance(address);
       })
       .catch((error) => {
         console.log(error);
         setLoading(false);
-        toast(<NotificationError text="Failed to create quiz." />);
+        toast.dismiss();
+        toast.error("Failed to create quiz.");
       });
   };
 
   const deleteQuiz = async (quiz) => {
+    toast.info("Deleting Quiz");
     setLoading(true);
     deleteQuizAction(address, quiz.appId)
       .then(() => {
-        toast(<NotificationSuccess text="Quiz deleted successfully" />);
+        toast.dismiss();
+        toast.success("Quiz deleted successfully");
         getQuizzes();
         fetchBalance(address);
       })
       .catch((error) => {
         console.log(error);
         setLoading(false);
-        toast(<NotificationError text="Failed to delete quiz." />);
+        toast.dismiss();
+        toast.success("Failed to delete quiz.");
       });
   };
 

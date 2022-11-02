@@ -1,0 +1,10 @@
+1. stored the player's score in session storage which serves as a backup, as currrently the player score gets deleted if player refreshes on getting to the end quiz section, so this allows the score to persist even after reload for a given period of time
+
+2. noticed during game play, that immediately after completing a quiz session, and the user is directed to the end quiz section if the user cancels the end quiz transaction, the users then gets access to the quiz session again, meaning they can retake the quiz as many times just by canceling the end quiz transaction after they just completed that quiz.
+Fixed this issue by setting the quizStarted value to false when the quiz ended transaction fails.
+
+3. noticed that the player history was not showing only the quizzes that the player had partaken in but it was showing all quizzes that were available,, fixed this issue, by attaching a note to the start quiz transaction, the note would be added only to quizzes the player had not taken before, so we can then use that note to get quizzes that the player had partaken in.
+
+4. updated the notifications of the code base
+
+5. fixed useEffect warning that popped up whenever the pages gets redirected to the results page.
