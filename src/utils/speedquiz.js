@@ -4,6 +4,7 @@ import {
   algodClient,
   indexerClient,
   speedQuizNote,
+  attemptNote,
   minRound,
   myAlgoConnect,
   numGlobalBytesQuiz,
@@ -275,7 +276,7 @@ export const optInAction = async (senderAddress, quiz) => {
 };
 
 // START QUIZ: Group transaction consisting of ApplicationCallTxn and PaymentTxn
-export const startQuizAction = async (senderAddress, quiz) => {
+export const startQuizAction = async (senderAddress, quiz, playerInfo) => {
   console.log("Starting quiz...");
 
   let params = await algodClient.getTransactionParams().do();
@@ -284,14 +285,29 @@ export const startQuizAction = async (senderAddress, quiz) => {
   let startArg = new TextEncoder().encode("start");
   let appArgs = [startArg];
 
-  // Create ApplicationCallTxn
-  let appCallTxn = algosdk.makeApplicationCallTxnFromObject({
-    from: senderAddress,
-    appIndex: quiz.appId,
-    onComplete: algosdk.OnApplicationComplete.NoOpOC,
-    suggestedParams: params,
-    appArgs: appArgs,
-  });
+  let appCallTxn;
+
+  if (!playerInfo.playerAttempts) {
+    let note = new TextEncoder().encode(attemptNote);
+    // Create ApplicationCallTxn with note
+    appCallTxn = algosdk.makeApplicationCallTxnFromObject({
+      from: senderAddress,
+      appIndex: quiz.appId,
+      onComplete: algosdk.OnApplicationComplete.NoOpOC,
+      suggestedParams: params,
+      appArgs: appArgs,
+      note: note,
+    });
+  } else {
+    // Create ApplicationCallTxn without notes
+    appCallTxn = algosdk.makeApplicationCallTxnFromObject({
+      from: senderAddress,
+      appIndex: quiz.appId,
+      onComplete: algosdk.OnApplicationComplete.NoOpOC,
+      suggestedParams: params,
+      appArgs: appArgs,
+    });
+  }
 
   // Create PaymentTxn
   let paymentTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -523,7 +539,7 @@ export const getQuizApplication = async (appId) => {
 // GET PlayerInfo: Use indexer
 export const getPlayerHistoryAction = async (senderAddress) => {
   console.log("Fetching your history info...");
-  let note = new TextEncoder().encode(speedQuizNote);
+  let note = new TextEncoder().encode(attemptNote);
   let encodedNote = Buffer.from(note).toString("base64");
 
   // Step 1: Get all transactions by notePrefix (+ minRound filter for performance)
@@ -532,11 +548,12 @@ export const getPlayerHistoryAction = async (senderAddress) => {
     .notePrefix(encodedNote)
     .txType("appl")
     .minRound(minRound)
+    .address(senderAddress)
     .do();
 
   let playerInfo = [];
   for (const transaction of transactionInfo.transactions) {
-    let appId = transaction["created-application-index"];
+    let appId = transaction["application-transaction"]["application-id"];
     if (appId) {
       // Step 2: Get each application by application id
       let _info = await getInfo(appId, senderAddress);

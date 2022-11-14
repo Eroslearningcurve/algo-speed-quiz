@@ -28,6 +28,7 @@ export const minRound = 21540981;
 
 // https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-0002.md
 export const speedQuizNote = "speed-quiz-dapp:uv1";
+export const attemptNote = "quiz-attempt:uv0";
 
 // Maximum local storage allocation, immutable
 export const numLocalIntsQuiz = 3;

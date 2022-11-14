@@ -32,6 +32,7 @@ const QuestionBox = ({ quizInfo, questions, endQuiz }) => {
   }
 
   if (number === questions.length || quizTime < 0) {
+    sessionStorage.setItem("score", quizTime);
     return (
       <EndBox
         endQuiz={endQuiz}

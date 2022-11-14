@@ -3,6 +3,12 @@ import PropTypes from "prop-types";
 import { Button } from "react-bootstrap";
 
 const EndBox = ({ endQuiz, totalTime, score = 0 }) => {
+  if (!score) {
+    if (sessionStorage.getItem("score") !== null) {
+      score = sessionStorage.getItem("score");
+    }
+  }
+  console.log(score);
   const calculatePercent = () => {
     let result = (score / totalTime) * 100;
     endQuiz(Math.round(result));
