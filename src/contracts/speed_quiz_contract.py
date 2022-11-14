@@ -7,6 +7,7 @@ class Quiz:
         time_per_question = Bytes("Q-TIME")  # uint64
         total_time = Bytes("TIME")  # uint64
         date = Bytes("DATE")  # uint64
+        downvotes = Bytes("DOWNVOTES") #unit64
         no_of_questions = Bytes("QUESTIONS")  # uint64
         no_of_attempts = Bytes("ATTEMPTS")  # uint64
         no_of_successful_attempts = Bytes("S-ATTEMPTS")  # uint64
@@ -61,6 +62,10 @@ class Quiz:
                 self.Global_Variables.no_of_successful_attempts,
                 Int(0)
             ),
+            App.globalPut(
+                self.Global_Variables.downvotes,
+                Int(0)
+            ),
             Approve()
         ])
 
@@ -112,6 +117,32 @@ class Quiz:
             Approve()
         ])
 
+    def downVoteQuiz(self):
+            return Seq([
+            Assert(
+                And(
+                    # check that user has opted in
+                    App.optedIn(Txn.accounts[0], Txn.applications[0]),
+                    # check that quiz is not empty
+                    App.globalGet(
+                        self.Global_Variables.no_of_questions) > Int(0),
+                    # check that this is a group txn, (1) this txn, (2) payment txn.
+                    Global.group_size() == Int(1),
+                    # check that this transaction is ahead
+                    Txn.group_index() == Int(0),
+                )
+            ),
+
+            # update attempts
+            App.globalPut(
+                self.Global_Variables.downvotes,
+                self.Global_Variables.downvotes() + Int(1)
+            ),
+
+            Approve()
+        ])
+
+        
     # subscribes user to contract
     def opt_in(self):
         return Seq([
